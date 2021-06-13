@@ -82,7 +82,7 @@ class TestAPI:
         data = {"username": username, "password1": password1, "password2": password2}
         response_code = api_client.post_request(path='/users', data=data).status_code
         print(response_code)
-        if exp_result is 'True':
+        if exp_result == 'True':
             assert 100 <= response_code < 400
         else:
             assert response_code >= 400
