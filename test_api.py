@@ -94,7 +94,6 @@ class TestAPI:
         data = {"username": username, "password1": password1, "password2": password2}
         response_code = api_client.post_request(path='/users', data=data).status_code
         print(response_code)
-        print(username, password1, password2)
         if exp_result is True:
             assert 100 <= response_code < 400
         else:
@@ -104,9 +103,8 @@ class TestAPI:
                              [get_token_data(i) for i in range(len(TokenData.comment_list))])
     def test_get_token(self, username, password1, exp_result, comment):
         data = {"username": username, "password": password1}
-        print(username, password1)
         response_code = api_client.post_request(path='/login', data=data).status_code
-        print(username, password1)
+        print(response_code)
         if exp_result is True:
             assert 100 <= response_code < 400
         else:
