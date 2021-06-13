@@ -16,10 +16,7 @@ def upd_user_counter():
 
 
 
-
-
 user_id_for_create = upd_user_counter()
-
 
 class ExtraData:
     username_list = ['test1w2e2e' + user_id_for_create, 'test1w2e2e' + user_id_for_create, 12345678,

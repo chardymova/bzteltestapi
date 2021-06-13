@@ -1,8 +1,10 @@
+import csv
 import requests
 import pytest
-import csv
+
 from extra_data import ExtraData
-from upd_data import UpdatePwData
+from token_data import TokenData
+
 
 class APIClient:
     '''Клиент для работы с API.'''
@@ -20,7 +22,8 @@ class APIClient:
         response = requests.post(self.base_address + str(path), json=data)
         return response
 
-class Dataset:
+
+class DatasetRegistration:
     def __init__(self, get_data_from_csv, data):
         get_data_from_csv(self, data)
 
@@ -43,71 +46,71 @@ class Dataset:
                 self.result_list.append(row[3])
                 self.comment_list.append(row[4])
 
-
     def get_login_data(self, i):
-        return dataset.username_list[i], \
-               dataset.password1_list[i], \
-               dataset.password2_list[i], \
-               dataset.result_list[i], \
-               dataset.comment_list[i]
-    def get_extra_login_data(self, i):
-        return ExtraData.username_list[i], \
-               ExtraData.password1_list[i], \
-               ExtraData.password2_list[i], \
-               ExtraData.result_list[i], \
-               ExtraData.comment_list[i]
-    def get_upd_pw_data(self, i):
-        return UpdatePwData.username_list[i], \
-               UpdatePwData.old_password_list[i], \
-               UpdatePwData.password1_list[i], \
-               UpdatePwData.password2_list[i], \
-               UpdatePwData.result_list[i], \
-               UpdatePwData.comment_list[i]
+        return dataset_reg.username_list[i], \
+               dataset_reg.password1_list[i], \
+               dataset_reg.password2_list[i], \
+               dataset_reg.result_list[i], \
+               dataset_reg.comment_list[i]
 
 
-dataset = Dataset(Dataset.get_data_from_csv, 'name-pw1-pw2.csv')
+def get_extra_login_data(i):
+    return ExtraData.username_list[i], \
+           ExtraData.password1_list[i], \
+           ExtraData.password2_list[i], \
+           ExtraData.result_list[i], \
+           ExtraData.comment_list[i]
+
+
+def get_token_data(i):
+    return TokenData.username_list[i], \
+           TokenData.password1_list[i], \
+           TokenData.result_list[i], \
+           TokenData.comment_list[i]
+
+
+dataset_reg = DatasetRegistration(DatasetRegistration.get_data_from_csv, 'name-pw1-pw2.csv')
 api_client = APIClient()
+
+
 class TestAPI:
 
     @pytest.mark.parametrize('username, password1, password2, exp_result, comment',
-                             [dataset.get_login_data(i) for i in range(len(dataset.comment_list))])
+                             [dataset_reg.get_login_data(i)
+                              for i in range(len(dataset_reg.comment_list))])
     def test_status_code(self, username, password1, password2, exp_result, comment):
         data = {"username": username, "password1": password1, "password2": password2}
         response_code = api_client.post_request(path='/users', data=data).status_code
         print(response_code)
-        if exp_result == 'True':
-            assert 100<= response_code<400
+        if exp_result is 'True':
+            assert 100 <= response_code < 400
         else:
-            assert response_code>=400
+            assert response_code >= 400
 
     @pytest.mark.parametrize('username, password1, password2, exp_result, comment',
-                             [dataset.get_extra_login_data(i) for i in
+                             [get_extra_login_data(i) for i in
                               range(len(ExtraData.comment_list))])
     def test_status_code_extra_data(self, username, password1, password2, exp_result, comment):
         data = {"username": username, "password1": password1, "password2": password2}
         response_code = api_client.post_request(path='/users', data=data).status_code
         print(response_code)
         print(username, password1, password2)
-        if exp_result == True:
-            assert 100<= response_code<400
+        if exp_result is True:
+            assert 100 <= response_code < 400
         else:
-            assert response_code>=400
+            assert response_code >= 400
 
-    @pytest.mark.parametrize('username, old_pw, password1, password2, exp_result, comment',
-                             [dataset.get_upd_pw_data(i) for i in range(len(UpdatePwData.username_list))])
-    def test_upd_pw(self, username, old_pw, password1, password2, exp_result, comment):
-        data = {"username": username, "old_password": old_pw, "password1": password1, "password2": password2}
-        response = api_client.put_request(path='/users', data=data)
-        response_code = response.status_code
-        print(response)
-        print(response_code)
-        print(username, old_pw, password1)
-
-        if exp_result == True:
-            assert 100<= response_code<400
+    @pytest.mark.parametrize('username, password1, exp_result, comment',
+                             [get_token_data(i) for i in range(len(TokenData.comment_list))])
+    def test_get_token(self, username, password1, exp_result, comment):
+        data = {"username": username, "password": password1}
+        print(username, password1)
+        response_code = api_client.post_request(path='/login', data=data).status_code
+        print(username, password1)
+        if exp_result is True:
+            assert 100 <= response_code < 400
         else:
-            assert response_code>=400
-
+            assert response_code >= 400
 
 
 def main():
